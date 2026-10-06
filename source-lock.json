@@ -1,0 +1,20 @@
+{
+  "base_image": "vllm/vllm-openai@sha256:c1c9f6fd5c109ba7f0546a59f5b2f15fb87f64c77782e90a27b648b42a8e67c3",
+  "bootstrap_sha256": "4539200ae2284a2b6ec76becc4ed5b55e75db684c5f28fd9c05233621b1676f0",
+  "canonical_runtime_profile_id": "text-vllm-0.31.0-cu130-ssh-v1",
+  "contains_private_material": false,
+  "files": {
+    "rental_control/image/Dockerfile": "b9666c8262d34fa5c520e0fd197576c988df0eee175666e0ab09ae7406167423",
+    "rental_control/image/rental-entrypoint.sh": "205cdc6ae13e79602ad0acd46e3ee8323605ba12fc5e6db94cf86ddc7f2c5412",
+    "rental_control/pod-ssh-bootstrap.sh": "4539200ae2284a2b6ec76becc4ed5b55e75db684c5f28fd9c05233621b1676f0"
+  },
+  "platform": "linux/amd64",
+  "runtime_matrix": {
+    "cuda_runtime": "13.0.2",
+    "python": "3.12.3",
+    "pytorch": "2.13.0+cu130",
+    "transformers": "5.17.0",
+    "vllm": "0.31.0"
+  },
+  "schema": "benchmark.public_runtime_source_lock.v1"
+}
