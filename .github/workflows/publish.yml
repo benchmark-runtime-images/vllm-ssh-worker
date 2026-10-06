@@ -96,8 +96,6 @@ jobs:
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
             benchmark.runtime.profile=text-vllm-0.31.0-cu130-ssh-v1
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
       - name: Attest the published digest
         uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be
