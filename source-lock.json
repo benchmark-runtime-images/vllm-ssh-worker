@@ -4,8 +4,9 @@
   "canonical_runtime_profile_id": "text-vllm-0.31.0-cu130-ssh-v1",
   "contains_private_material": false,
   "files": {
-    "rental_control/image/Dockerfile": "b9666c8262d34fa5c520e0fd197576c988df0eee175666e0ab09ae7406167423",
-    "rental_control/image/rental-entrypoint.sh": "205cdc6ae13e79602ad0acd46e3ee8323605ba12fc5e6db94cf86ddc7f2c5412",
+    "rental_control/image/Dockerfile": "998d36cb7a6dc1a48e520fa6111c8045d08af74240a89d0c44a2e91f3d69495b",
+    "rental_control/image/rental-entrypoint.sh": "74cc21853e88ee7f04b0e90a5a402f7492d74c5c7fa8af6d5afc505a5ac47a31",
+    "rental_control/image/rental-job-anchor.py": "e8c887b121544b98e266ab6b29e84884df775a0bfa7faadc8266a247dc738e00",
     "rental_control/pod-ssh-bootstrap.sh": "4539200ae2284a2b6ec76becc4ed5b55e75db684c5f28fd9c05233621b1676f0"
   },
   "platform": "linux/amd64",

@@ -19,6 +19,7 @@ RUN apt-get update \
 
 COPY --chmod=0755 rental_control/pod-ssh-bootstrap.sh /usr/local/sbin/pod-ssh-bootstrap.sh
 COPY --chmod=0755 rental_control/image/rental-entrypoint.sh /usr/local/sbin/rental-entrypoint.sh
+COPY --chmod=0755 rental_control/image/rental-job-anchor.py /usr/local/sbin/rental-job-anchor.py
 
 RUN printf '%s  %s\n' "${BOOTSTRAP_SHA256}" /usr/local/sbin/pod-ssh-bootstrap.sh \
       | sha256sum -c - \
@@ -49,6 +50,7 @@ LABEL org.opencontainers.image.title="Neutral benchmark worker runtime" \
       benchmark.runtime.torch="2.13.0+cu130" \
       benchmark.runtime.cuda="13.0.2" \
       benchmark.runtime.transformers="5.17.0" \
+      benchmark.worker.startup="managed-job-v1" \
       benchmark.ssh.bootstrap.sha256="4539200ae2284a2b6ec76becc4ed5b55e75db684c5f28fd9c05233621b1676f0"
 
 ENTRYPOINT ["/usr/local/sbin/rental-entrypoint.sh"]

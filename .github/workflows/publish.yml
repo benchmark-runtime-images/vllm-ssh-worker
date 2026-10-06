@@ -6,7 +6,7 @@ on:
       release_tag:
         description: Immutable release tag
         required: true
-        default: v0.31.0-ssh1
+        default: v0.31.0-ssh2
   push:
     tags:
       - 'v*'
@@ -40,6 +40,7 @@ jobs:
           expected = {
               'rental_control/image/Dockerfile',
               'rental_control/image/rental-entrypoint.sh',
+              'rental_control/image/rental-job-anchor.py',
               'rental_control/pod-ssh-bootstrap.sh',
           }
           if set(lock['files']) != expected:
@@ -91,7 +92,7 @@ jobs:
           sbom: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.release_tag || github.ref_name }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runtime-0.31.0-ssh1
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runtime-0.31.0-ssh2
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
