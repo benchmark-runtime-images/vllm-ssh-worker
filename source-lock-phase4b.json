@@ -1,0 +1,21 @@
+{
+  "base_image": "ghcr.io/benchmark-runtime-images/vllm-ssh-worker@sha256:856891fd5e66237a5107ddc06fd6a3f212ed4a93b735263986aa25fbced02900",
+  "contains_private_material": false,
+  "files": {
+    "rental_control/image/Dockerfile.phase4b": "16895f0de1f8d1747cbae35fe52ba52c1152de0fc0ec013352744ce228137854",
+    "rental_control/image/phase4b-requirements.lock": "02886a08ac7bec427e9b5d83ffc8837a565dd87ef24e82edf982ad42c06d3a09",
+    "rental_control/image/phase4b-runtime-selftest.py": "0c7b985af9279663892b9b13c7b9432bf4694759107ceeca196da7994a965265"
+  },
+  "platform": "linux/amd64",
+  "profile_id": "multi-model-vllm-0.31.0-cu130-ssh-v1",
+  "runtime_matrix": {
+    "cuda_runtime": "13.0.2",
+    "mistral_common": "1.11.0",
+    "python": "3.12.3",
+    "pytorch": "2.13.0+cu130",
+    "transformers": "5.17.0",
+    "vllm": "0.31.0"
+  },
+  "schema": "benchmark.public_multi_model_runtime_source_lock.v1",
+  "workflow_sha256": "5246c55850b5c4fe0134b75505bb1a1259855903c0659e39cc1e17e589424f15"
+}

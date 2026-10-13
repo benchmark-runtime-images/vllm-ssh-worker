@@ -1,0 +1,110 @@
+name: Publish immutable multi-model runtime image
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Immutable release tag
+        required: true
+        default: multi-model-v0.31.0-ssh1
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  attestations: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: benchmark-runtime-images/vllm-ssh-worker
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - name: Check out the public build source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Verify the locked public build context
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          python3 - <<'PY'
+          import hashlib, json, pathlib, re
+          root = pathlib.Path('.')
+          lock = json.loads((root / 'source-lock-phase4b.json').read_text())
+          expected = {
+              'rental_control/image/Dockerfile.phase4b',
+              'rental_control/image/phase4b-requirements.lock',
+              'rental_control/image/phase4b-runtime-selftest.py',
+          }
+          if set(lock['files']) != expected:
+              raise SystemExit('PUBLICATION_ALLOWLIST_DRIFT')
+          for name, digest in lock['files'].items():
+              actual = hashlib.sha256((root / name).read_bytes()).hexdigest()
+              if actual != digest:
+                  raise SystemExit(f'PUBLICATION_SOURCE_HASH_MISMATCH:{name}')
+          text = '\n'.join((root / name).read_text(errors='replace') for name in expected)
+          forbidden = [
+              r'-----BEGIN [A-Z ]*PRIVATE KEY-----', r'RUNPOD_API_KEY\s*=',
+              r'HF_TOKEN\s*=', r'GITHUB_TOKEN\s*=', r'authorized_keys',
+          ]
+          for pattern in forbidden:
+              if re.search(pattern, text, re.IGNORECASE):
+                  raise SystemExit(f'FORBIDDEN_PUBLICATION_MATERIAL:{pattern}')
+          base = lock['base_image']
+          if base not in text:
+              raise SystemExit('PINNED_BASE_DIGEST_MISSING')
+          PY
+
+      - name: Reserve disk for the pinned CUDA image
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - name: Configure BuildKit
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+
+      - name: Authenticate to GHCR with the ephemeral workflow token
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish the pinned linux/amd64 image
+        id: build
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8
+        with:
+          context: .
+          file: ./rental_control/image/Dockerfile.phase4b
+          platforms: linux/amd64
+          push: true
+          provenance: mode=max
+          sbom: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ inputs.release_tag }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            benchmark.runtime.profile=multi-model-vllm-0.31.0-cu130-ssh-v1
+
+      - name: Attest the published digest
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+      - name: Record the immutable result
+        shell: bash
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          printf 'image=%s/%s@%s\n' "$REGISTRY" "$IMAGE_NAME" "$DIGEST" | tee "$GITHUB_STEP_SUMMARY"
+

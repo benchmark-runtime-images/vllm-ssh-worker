@@ -1,0 +1,27 @@
+ARG BASE_IMAGE=ghcr.io/benchmark-runtime-images/vllm-ssh-worker@sha256:856891fd5e66237a5107ddc06fd6a3f212ed4a93b735263986aa25fbced02900
+FROM ${BASE_IMAGE}
+
+# This dependency is installed while building the immutable image. Runtime Pod
+# startup remains completely offline and performs no package installation.
+COPY rental_control/image/phase4b-requirements.lock \
+  /tmp/phase4b-requirements.lock
+RUN python3 -m pip install --no-cache-dir --no-deps --require-hashes \
+      --requirement /tmp/phase4b-requirements.lock \
+    && rm -f /tmp/phase4b-requirements.lock
+
+COPY --chmod=0755 rental_control/image/phase4b-runtime-selftest.py \
+  /usr/local/bin/phase4b-runtime-selftest
+
+RUN /usr/local/bin/phase4b-runtime-selftest
+
+LABEL org.opencontainers.image.title="Neutral multi-model benchmark runtime" \
+      org.opencontainers.image.description="Digest-locked multi-model vLLM runtime with prebuilt SSH bootstrap" \
+      benchmark.runtime.profile="multi-model-vllm-0.31.0-cu130-ssh-v1" \
+      benchmark.runtime.vllm="0.31.0" \
+      benchmark.runtime.python="3.12.3" \
+      benchmark.runtime.torch="2.13.0+cu130" \
+      benchmark.runtime.cuda="13.0.2" \
+      benchmark.runtime.transformers="5.17.0" \
+      benchmark.runtime.mistral-common="1.11.0" \
+      benchmark.runtime.selftest="phase4b-runtime-selftest-v1"
+
